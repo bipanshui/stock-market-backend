@@ -1,15 +1,21 @@
 #!/bin/bash
-while true; do
-    echo "Starting server..."
-    fuser -k 5000/tcp 2>/dev/null
-    node src/app.js &
-    PID=$!
-    sleep 3
-    if curl -s http://localhost:5000/health > /dev/null 2>&1; then
-        echo "Server running on PID $PID"
-    else
-        echo "Server failed, restarting..."
-        sleep 2
-    fi
-    wait
-done
+echo "Starting server"
+node src/app.js &
+PID=$!
+
+sleep 5
+echo "Checking health"
+
+if curl -s http://localhost:5000/health 2> /dev/null; then
+   echo "Server is healthy"
+else 
+   echo "Server is not healthy"
+fi
+
+sleep 15
+
+echo "Stopping server .. "
+kill $PID
+wait $PID 2> /dev/null
+
+echo "Done"
