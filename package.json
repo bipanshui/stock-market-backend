@@ -7,7 +7,13 @@
     "start": "node src/app.js",
     "dev": "node src/app.js",
     "cron": "node src/jobs/scheduler.js",
-    "test": "jest --coverage"
+    "test": "jest --coverage",
+    "prod:start": "bash scripts/start-prod.sh start",
+    "prod:reload": "bash scripts/start-prod.sh reload",
+    "prod:restart": "bash scripts/start-prod.sh restart",
+    "prod:stop": "bash scripts/start-prod.sh stop",
+    "prod:logs": "bash scripts/start-prod.sh logs",
+    "prod:status": "bash scripts/start-prod.sh status"
   },
   "keywords": [
     "stock",

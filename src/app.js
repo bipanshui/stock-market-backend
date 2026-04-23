@@ -74,10 +74,48 @@ const startServer = async () => {
 
   startCron();
 
-  app.listen(config.port, () => {
+  const server = app.listen(config.port, () => {
     logger.info(`Server running on port ${config.port}`);
     logger.info(`API Documentation available at http://localhost:${config.port}/api-docs`);
   });
+
+  // ── Graceful Shutdown ──────────────────────────────────────────────────────
+  // PM2 sends SIGINT on `pm2 reload` (cluster) and SIGTERM on `pm2 stop`.
+  // We stop accepting new connections, drain in-flight requests, then
+  // close downstream connections before exiting cleanly.
+  const gracefulShutdown = (signal) => {
+    logger.info(`${signal} received — starting graceful shutdown`);
+
+    server.close(async () => {
+      logger.info('HTTP server closed — no new requests accepted');
+
+      try {
+        await mongoose.connection.close(false);
+        logger.info('MongoDB connection closed');
+      } catch (err) {
+        logger.error('Error closing MongoDB', { error: err.message });
+      }
+
+      try {
+        await cacheService.disconnect();
+        logger.info('Cache connection closed');
+      } catch (err) {
+        logger.error('Error closing cache', { error: err.message });
+      }
+
+      logger.info('Graceful shutdown complete');
+      process.exit(0);
+    });
+
+    // Force exit if drain takes too long (PM2 kill_timeout is 10 000 ms)
+    setTimeout(() => {
+      logger.error('Forceful shutdown — drain timeout exceeded');
+      process.exit(1);
+    }, 9000).unref();
+  };
+
+  process.on('SIGINT',  () => gracefulShutdown('SIGINT'));
+  process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
 };
 
 if (require.main === module) {
