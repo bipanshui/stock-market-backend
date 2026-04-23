@@ -82,6 +82,14 @@ class CacheService {
     }
   }
 
+  async disconnect() {
+    if (this.client) {
+      await this.client.quit();
+      this.isReady = false;
+      logger.info('Redis connection closed');
+    }
+  }
+
   buildKey(type, symbol) {
     return `${type}:${symbol}`;
   }
