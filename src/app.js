@@ -74,8 +74,8 @@ const startServer = async () => {
 
   startCron();
 
-  const server = app.listen(config.port, () => {
-    logger.info(`Server running on port ${config.port}`);
+  const server = app.listen(config.port, config.host, () => {
+    logger.info(`Server listening on ${config.host}:${config.port}`);
     logger.info(`API Documentation available at http://localhost:${config.port}/api-docs`);
   });
 
