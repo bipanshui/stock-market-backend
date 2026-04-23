@@ -3,7 +3,7 @@ FROM node:18-alpine AS builder
 
 WORKDIR /app
 
-# Copy manifests first (better layer caching — only re-runs npm ci when lockfile changes)
+# Copy manifests first (better layer caching)
 COPY package*.json ./
 
 # Install ALL deps needed at build time
@@ -20,10 +20,13 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy pruned node_modules + app code from builder
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
-COPY --from=builder /app/package*.json ./
+# Create logs directory and set ownership to 'node' user
+RUN mkdir logs && chown -R node:node /app
+
+# Copy pruned node_modules + app code from builder with proper ownership
+COPY --chown=node:node --from=builder /app/node_modules ./node_modules
+COPY --chown=node:node --from=builder /app/src ./src
+COPY --chown=node:node --from=builder /app/package*.json ./
 
 # Drop root privileges — run as the built-in non-root user
 USER node
