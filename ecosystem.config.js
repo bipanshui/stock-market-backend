@@ -9,6 +9,10 @@
  *   pm2 logs stock-api
  */
 
+const path = require('path');
+
+const logDir = path.resolve(__dirname, 'logs');
+
 module.exports = {
   apps: [
     {
@@ -29,8 +33,8 @@ module.exports = {
 
       // ── Logging ──────────────────────────────────────────────────
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      out_file: './logs/pm2-out.log',
-      error_file: './logs/pm2-error.log',
+      out_file: path.join(logDir, 'pm2-out.log'),
+      error_file: path.join(logDir, 'pm2-error.log'),
       merge_logs: true,       // merge cluster instance logs
 
       // ── Graceful Shutdown ────────────────────────────────────────
@@ -61,8 +65,8 @@ module.exports = {
       autorestart: true,
       max_restarts: 5,
       log_date_format: 'YYYY-MM-DD HH:mm:ss Z',
-      out_file: './logs/cron-out.log',
-      error_file: './logs/cron-error.log',
+      out_file: path.join(logDir, 'cron-out.log'),
+      error_file: path.join(logDir, 'cron-error.log'),
 
       env: {
         NODE_ENV: 'development',
